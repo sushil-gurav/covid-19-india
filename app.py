@@ -306,4 +306,4 @@ def update_state_chart(clicked_state):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()
