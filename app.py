@@ -44,7 +44,10 @@ total_list = ['Total Active', 'Total Confirmed', 'Total Deceased', 'Total Recove
 daily_list = ['Daily Confirmed', 'Daily Deceased', 'Daily Recovered']
 color_continuous_scale_dict = {'Total Active': 'Blues', 'Total Confirmed': 'Purples',
                                'Total Deceased': 'Reds', 'Total Recovered': 'Greens', }
-color_discrete_map = {'Total Active': '#59C3C3', 'Total Confirmed': '#C359AC', 'Total Deceased': '#F9ADA0', 'Total Recovered': '#849E68'}
+color_discrete_map_total = {'Total Active': '#2170B5', 'Total Confirmed': '#6A51A3',
+                            'Total Deceased': '#CB181D', 'Total Recovered': '#238B46'}
+color_discrete_map_daily = {'Daily Active': '#2170B5', 'Daily Confirmed': '#6A51A3',
+                            'Daily Deceased': '#CB181D', 'Daily Recovered': '#238B46'}
 
 with open('data/json/states_daily.json') as states_daily:
     states_daily_json = json.load(states_daily)
@@ -68,7 +71,8 @@ df_states['DATE'] = df_states['DATE'].astype(str)
 
 with open('data/json/state_district_wise_v2.json') as state_district_wise_v2:
     state_district_wise_v2_json = json.load(state_district_wise_v2)
-df_state_district = json_normalize(data=state_district_wise_v2_json, record_path='districtData',
+df_state_district = json_normalize(data=state_district_wise_v2_json,
+                                   record_path='districtData',
                                    meta=['state', 'statecode'])
 df_state_district = df_state_district.rename(
     columns={'district': 'District', 'notes': 'Notes', 'active': 'Active', 'confirmed': 'Confirmed',
@@ -80,7 +84,6 @@ df_state_district = df_state_district.rename(
 def load_map_json(map_name):
     with open('maps/geojson/' + map_dict[map_name]) as res:
         map_json = json.load(res)
-    # print('Loaded the map of ' + map_name + '.')
 
     return map_json
 
@@ -88,7 +91,9 @@ def load_map_json(map_name):
 def create_country_map(status):
     country_json = load_map_json(map_name='India')
     today = df_states['DATE'][df_states.index[-1]]
-    count = str(int(df_states[(df_states['DATE'] == today) & (df_states['STATE'] == 'Total') & (df_states['STATUS'] == status)]['COUNT']))
+    count = str(int(
+        df_states[(df_states['DATE'] == today) & (df_states['STATE'] == 'Total') & (df_states['STATUS'] == status)][
+            'COUNT']))
     df_states_fig = df_states[(df_states['STATUS'] == status) & (df_states['STATE'] != 'Total')]
     fig_country_map = px.choropleth(df_states_fig,
                                     geojson=country_json,
@@ -106,18 +111,15 @@ def create_country_map(status):
                                   margin={"r": 0, "t": 0, "l": 0, "b": 0},
                                   sliders=dict(pad=dict(t=0, r=25, b=0, l=25)),
                                   coloraxis=dict(showscale=False),
-                                  annotations=[
-                                      dict(x=0.1, y=0.95, showarrow=False, text='India<br>' + status.split()[1] + ': ' + count,
-                                           xref="paper", yref="paper",
-                                           font=dict(size=15, color=color_discrete_map[status])), ]
+                                  annotations=[dict(x=0.1, y=0.95, showarrow=False,
+                                                    text='India<br>' + status.split()[1] + ': ' + count,
+                                                    xref="paper", yref="paper",
+                                                    font=dict(size=15, color=color_discrete_map_total[status]))]
                                   )
 
-    # Set map data, hover text and slider to today.
-    # today = df_states_fig['DATE'][df_states_fig.index[-1]]
     fig_country_map.data[0].z = df_states_fig[df_states_fig['DATE'] == today]['COUNT'].to_numpy()
     fig_country_map.data[0].hovertemplate = 'Date=' + today + '<br>State/UT=%{location}<br>' + status + '=%{z}'
     fig_country_map['layout']['sliders'][0].active = len(df_states_fig['DATE'].unique()) - 1
-    # print(fig_country_map.data[0])
 
     return fig_country_map
 
@@ -132,19 +134,25 @@ def create_country_chart(chart_type, bar_type):
                                     log_y=False,
                                     line_shape='spline',
                                     color='STATUS',
-                                    color_discrete_map=color_discrete_map)
-        fig_country_chart.update_traces(mode='markers+lines')
+                                    color_discrete_map=color_discrete_map_total)
+        fig_country_chart.update_traces(mode='lines')
     else:
         df_country_chart = df_country_chart[df_country_chart['STATUS'] == chart_type + ' ' + bar_type]
         fig_country_chart = px.bar(df_country_chart,
                                    x='DATE',
                                    y='COUNT',
                                    log_y=False,
-                                   )
+                                   color='STATUS',
+                                   color_discrete_map=color_discrete_map_daily)
+
     fig_country_chart.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0},
                                     legend=dict(orientation='h', title=dict(text='')),
                                     xaxis=dict(title=dict(text='')),
-                                    yaxis=dict(title=dict(text=''))
+                                    yaxis=dict(title=dict(text='')),
+                                    annotations=[dict(x=0.1, y=0.95, showarrow=False,
+                                                      text='India',
+                                                      xref="paper", yref="paper",
+                                                      font=dict(size=15))]
                                     )
 
     return fig_country_chart
@@ -179,14 +187,14 @@ def create_state_map(state, status):
                                   locationmode='geojson-id',  # scope="asia",
                                   labels={status: 'Total ' + status},
                                   featureidkey='properties.district',
-                                  # animation_frame='DATE'
                                   )
     fig_state_map.update_geos(fitbounds="locations", visible=False)
     fig_state_map.update_layout(
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
         coloraxis=dict(showscale=False),
-        annotations=[dict(x=0.1, y=0.95, showarrow=False, text=state+'<br>'+status + ': '+ count, xref="paper", yref="paper",
-                          font=dict(size=15, color=color_discrete_map['Total ' + status])), ]
+        annotations=[dict(x=0.1, y=0.95, showarrow=False, text=state + '<br>' + status + ': ' + count, xref="paper",
+                          yref="paper",
+                          font=dict(size=15, color=color_discrete_map_total['Total ' + status]))]
     )
 
     return fig_state_map
@@ -202,28 +210,31 @@ def create_state_chart(state_name, chart_type, bar_type):
                                   log_y=False,
                                   line_shape='spline',
                                   color='STATUS',
-                                  color_discrete_map={'Total Confirmed': '#59C3C3', 'Total Recovered': '#849E68',
-                                                      'Total Deceased': '#F9ADA0', 'Total Active': '#C359AC'})
-        fig_state_chart.update_traces(mode='markers+lines')
+                                  color_discrete_map=color_discrete_map_total)
+
+        fig_state_chart.update_traces(mode='lines')
     else:
         df_state_chart = df_state_chart[df_state_chart['STATUS'] == chart_type + ' ' + bar_type]
         fig_state_chart = px.bar(df_state_chart,
                                  x='DATE',
                                  y='COUNT',
                                  log_y=False,
-                                 )
+                                 color='STATUS',
+                                 color_discrete_map=color_discrete_map_daily)
 
     fig_state_chart.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0},
                                   legend=dict(orientation='h', title=dict(text='')),
                                   xaxis=dict(title=dict(text='')),
-                                  yaxis=dict(title=dict(text=''))
+                                  yaxis=dict(title=dict(text='')),
+                                  annotations=[
+                                      dict(x=0.1, y=0.95, showarrow=False,
+                                           text=state_name,
+                                           xref="paper", yref="paper",
+                                           font=dict(size=15)), ]
                                   )
 
     return fig_state_chart
 
-
-# external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-# app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app = dash.Dash(
     __name__, meta_tags=[{"name": "viewport", "content": "width=device-width"}]
@@ -286,7 +297,7 @@ app.layout = html.Div(
         html.Div(
             [
                 html.Div([html.Div(
-                    [dcc.RadioItems(id='country-map-status', options=[{'label': i, 'value': 'Total ' + i} for i in
+                    [dcc.RadioItems(id='status-map-country', options=[{'label': i, 'value': 'Total ' + i} for i in
                                                                       ['Active', 'Confirmed', 'Deceased',
                                                                        'Recovered']],
                                     value='Total Active', labelStyle={'display': 'inline-block'})],
@@ -295,16 +306,16 @@ app.layout = html.Div(
                     className="pretty_container seven columns",
                 ),
                 html.Div(
-                    [html.Div([dcc.RadioItems(id='country-total-daily',
+                    [html.Div([dcc.RadioItems(id='total-daily-country',
                                               options=[{'label': i, 'value': i} for i in ['Total', 'Daily']],
                                               value='Total', labelStyle={'display': 'inline-block'})],
                               className="radio-group"),
-                     html.Div([dcc.RadioItems(id='country-daily-status',
+                     html.Div([dcc.RadioItems(id='status-daily-country',
                                               options=[{'label': i, 'value': i} for i in
                                                        ['Confirmed', 'Deceased', 'Recovered']],
                                               value='Confirmed', labelStyle={'display': 'inline-block'})],
                               className="radio-group"),
-                     dcc.Graph(id='chart-india')
+                     dcc.Graph(id='chart-country')
                      ],
                     className="pretty_container five columns",
                 ),
@@ -314,7 +325,7 @@ app.layout = html.Div(
         html.Div(
             [
                 html.Div(
-                    [html.Div([dcc.RadioItems(id='state-map-status', options=[{'label': i, 'value': i} for i in
+                    [html.Div([dcc.RadioItems(id='status-map-state', options=[{'label': i, 'value': i} for i in
                                                                               ['Active', 'Confirmed', 'Deceased',
                                                                                'Recovered']],
                                               value='Active', labelStyle={'display': 'inline-block'})],
@@ -323,11 +334,11 @@ app.layout = html.Div(
                     className="pretty_container seven columns",
                 ),
                 html.Div(
-                    [html.Div([dcc.RadioItems(id='state-total-daily',
+                    [html.Div([dcc.RadioItems(id='total-daily-state',
                                               options=[{'label': i, 'value': i} for i in ['Total', 'Daily']],
                                               value='Total', labelStyle={'display': 'inline-block'})],
                               className="radio-group"),
-                     html.Div([dcc.RadioItems(id='state-daily-status',
+                     html.Div([dcc.RadioItems(id='status-daily-state',
                                               options=[{'label': i, 'value': i} for i in
                                                        ['Confirmed', 'Deceased', 'Recovered']],
                                               value='Confirmed', labelStyle={'display': 'inline-block'})],
@@ -345,9 +356,37 @@ app.layout = html.Div(
 
 
 @app.callback(
+    Output(component_id='map-country', component_property='figure'),
+    [Input(component_id='status-map-country', component_property='value')]
+)
+def update_country_map(value):
+    return create_country_map(status=value)
+
+
+@app.callback(
+    Output(component_id='status-daily-country', component_property='style'),
+    [Input(component_id='total-daily-country', component_property='value')]
+)
+def update_country_chart_radio(value):
+    if value == 'Daily':
+        return {'display': 'inline-block'}
+    else:
+        return {'display': 'none'}
+
+
+@app.callback(
+    Output(component_id='chart-country', component_property='figure'),
+    [Input(component_id='total-daily-country', component_property='value'),
+     Input(component_id='status-daily-country', component_property='value')]
+)
+def update_country_chart(country_total_daily, country_daily_status):
+    return create_country_chart(chart_type=country_total_daily, bar_type=country_daily_status)
+
+
+@app.callback(
     Output(component_id='map-state', component_property='figure'),
     [Input(component_id='map-country', component_property='clickData'),
-     Input(component_id='state-map-status', component_property='value')
+     Input(component_id='status-map-state', component_property='value')
      ]
 )
 def update_state_map(clicked_state, status):
@@ -360,8 +399,8 @@ def update_state_map(clicked_state, status):
 @app.callback(
     Output(component_id='chart-state', component_property='figure'),
     [Input(component_id='map-country', component_property='clickData'),
-     Input(component_id='state-total-daily', component_property='value'),
-     Input(component_id='state-daily-status', component_property='value')]
+     Input(component_id='total-daily-state', component_property='value'),
+     Input(component_id='status-daily-state', component_property='value')]
 )
 def update_state_chart(clicked_state, state_total_daily, state_daily_status):
     if clicked_state is not None:
@@ -372,42 +411,14 @@ def update_state_chart(clicked_state, state_total_daily, state_daily_status):
 
 
 @app.callback(
-    Output(component_id='map-country', component_property='figure'),
-    [Input(component_id='country-map-status', component_property='value')]
-)
-def update_country_map(value):
-    return create_country_map(status=value)
-
-
-@app.callback(
-    Output(component_id='country-daily-status', component_property='style'),
-    [Input(component_id='country-total-daily', component_property='value')]
-)
-def update_country_chart_radio(value):
-    if value == 'Daily':
-        return {'display': 'inline-block'}
-    else:
-        return {'display': 'none'}
-
-
-@app.callback(
-    Output(component_id='state-daily-status', component_property='style'),
-    [Input(component_id='state-total-daily', component_property='value')]
+    Output(component_id='status-daily-state', component_property='style'),
+    [Input(component_id='total-daily-state', component_property='value')]
 )
 def update_state_chart_radio(value):
     if value == 'Daily':
         return {'display': 'inline-block'}
     else:
         return {'display': 'none'}
-
-
-@app.callback(
-    Output(component_id='chart-india', component_property='figure'),
-    [Input(component_id='country-total-daily', component_property='value'),
-     Input(component_id='country-daily-status', component_property='value')]
-)
-def update_country_chart(country_total_daily, country_daily_status):
-    return create_country_chart(chart_type=country_total_daily, bar_type=country_daily_status)
 
 
 if __name__ == '__main__':
