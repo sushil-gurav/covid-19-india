@@ -2021,7 +2021,7 @@ Entry_ID,State Patient Number,Date Announced,Age Bracket,Gender,Detected City,De
 2020,KA-P260,01/05/2020,,,,Uttara Kannada,Karnataka,KA,1,Recovered,,,https://twitter.com/DHFWKA/status/1256118731769552896,,,,,,29911
 2021,KA-P274,01/05/2020,,,,Kalaburagi,Karnataka,KA,1,Recovered,,,https://twitter.com/DHFWKA/status/1256118731769552896,,,,,,29912
 2022,KA-P304,01/05/2020,,,,Gadag,Karnataka,KA,1,Recovered,,,https://twitter.com/DHFWKA/status/1256118731769552896,,,,,,29913
-41018,KA-P466,01/05/2020,,,,,Karnataka,KA,1,Migrated_Other,,,,,,,,,
+41018,KA-P466,27/04/2020,,,,Bengaluru Urban,Karnataka,KA,1,Migrated_Other,,,,,,,,,
 2023,,01/05/2020,,,,Anantapur,Andhra Pradesh,AP,1,Hospitalized,,,https://twitter.com/ArogyaAndhra/status/1256103664407597056,,,,,,29914
 2024,,01/05/2020,,,,Anantapur,Andhra Pradesh,AP,1,Hospitalized,,,https://twitter.com/ArogyaAndhra/status/1256103664407597056,,,,,,29915
 2025,,01/05/2020,,,,Anantapur,Andhra Pradesh,AP,1,Hospitalized,,,https://twitter.com/ArogyaAndhra/status/1256103664407597056,,,,,,29916
@@ -10008,12 +10008,14 @@ Entry_ID,State Patient Number,Date Announced,Age Bracket,Gender,Detected City,De
 10006,,09/05/2020,,,,Mayurbhanj,Odisha,OR,1,Hospitalized,,,https://twitter.com/ANI/status/1259300967498956800?s=09,,,,,,37899
 10007,,09/05/2020,,,,Kamrup Metropolitan,Assam,AS,-1,Hospitalized,,Reconcilation With Assam Dashboard,https://covid19.assam.gov.in/all-districts/,,,,,,37912
 10008,,09/05/2020,,,,Kamrup Metropolitan,Assam,AS,0,Deceased,,Reconcilation With Assam Dashboard,https://covid19.assam.gov.in/all-districts/,,,,,,37911
-,,27/04/2020,,,,Jalandhar,Punjab,PB,10,Hospitalized,,Correction for district count,,,,,,,
-,,27/04/2020,,,,,Punjab,PB,-9,Hospitalized,,Correction for district count,,,,,,,
-,,27/04/2020,,,,Ludhiana,Punjab,PB,2,Hospitalized,,Correction for district count,,,,,,,
-,,27/04/2020,,,,,Punjab,PB,-1,Hospitalized,,Correction for district count,,,,,,,
-,,27/04/2020,,,,Sonipat,Haryana,HR,-7,Recovered,,Reconciliation of extra entries created due to district name correction,,,,,,,
-,,27/04/2020,,,,Thoothukkudi,Tamil Nadu,TN,-1,Deceased,,,,,,,,,
-,,14/03/2020,,,,,Himachal Pradesh,HP,1,Migrated_Other,,Entry for reduction from Active,,,,,,,
-,,14/03/2020,,,,,Himachal Pradesh,HP,1,Migrated_Other,,Entry for reduction from Active,,,,,,,
-,,14/03/2020,,,,,Himachal Pradesh,HP,1,Migrated_Other,,Entry for reduction from Active,,,,,,,
+43264,,27/04/2020,,,,Jalandhar,Punjab,PB,0,Hospitalized,,Correction for district count,,,,,,,
+43265,,27/04/2020,,,,,Punjab,PB,0,Hospitalized,,Correction for district count,,,,,,,
+43266,,27/04/2020,,,,Ludhiana,Punjab,PB,0,Hospitalized,,Correction for district count,,,,,,,
+43267,,27/04/2020,,,,,Punjab,PB,0,Hospitalized,,Correction for district count,,,,,,,
+43268,,27/04/2020,,,,Sonipat,Haryana,HR,-7,Recovered,,Reconciliation of extra entries created due to district name correction,,,,,,,
+43269,,27/04/2020,,,,,Haryana,HR,7,Recovered,,Reconciliation of extra entries created due to district name correction,,,,,,,
+43270,,27/04/2020,,,,Thoothukkudi,Tamil Nadu,TN,-1,Deceased,,,,,,,,,
+43271,,27/04/2020,,,,,Tamil Nadu,TN,1,Deceased,,,,,,,,,
+43272,,14/03/2020,,,,,Himachal Pradesh,HP,1,Migrated_Other,,Entry for reduction from Active,,,,,,,
+43273,,14/03/2020,,,,,Himachal Pradesh,HP,1,Migrated_Other,,Entry for reduction from Active,,,,,,,
+43274,,14/03/2020,,,,,Himachal Pradesh,HP,1,Migrated_Other,,Entry for reduction from Active,,,,,,,

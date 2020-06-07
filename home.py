@@ -1,81 +1,58 @@
-import json
-from itertools import product
 import dash_core_components as dcc
 import dash_html_components as html
-import pandas as pd
 import plotly.express as px
-import plotly.io as pio
-from pandas import json_normalize
+import plotly.graph_objects as go
+from data import *
 
-pio.templates['plotly'].layout['paper_bgcolor'] = '#F9F9F9'
-pio.templates['plotly'].layout['plot_bgcolor'] = '#F9F9F9'
-pio.templates['plotly'].layout['geo'].bgcolor = '#F9F9F9'
 
-map_dict = {'India': 'india.json', 'Andaman and Nicobar Islands': 'andamannicobarislands_district.json',
-            'Andhra Pradesh': 'andhrapradesh_district.json', 'Arunachal Pradesh': 'arunachalpradesh_district.json',
-            'Assam': 'assam_district.json', 'Bihar': 'bihar_district.json', 'Chandigarh': 'chandigarh_district.json',
-            'Chhattisgarh': 'chhattisgarh_district.json', 'Dadra and Nagar Haveli': 'dadranagarhaveli_district.json',
-            'Delhi': 'delhi_district.json', 'Goa': 'goa_district.json', 'Gujarat': 'gujarat_district.json',
-            'Haryana': 'haryana_district.json', 'Himachal Pradesh': 'himachalpradesh_district.json',
-            'Jammu and Kashmir': 'jammukashmir_district.json', 'Jharkhand': 'jharkhand_district.json',
-            'Karnataka': 'karnataka_district.json', 'Kerala': 'kerala_district.json', 'Ladakh': 'ladakh_district.json',
-            'Lakshadweep': 'lakshadweep_district.json', 'Madhya Pradesh': 'madhyapradesh_district.json',
-            'Maharashtra': 'maharashtra_district.json', 'Manipur': 'manipur_district.json',
-            'Meghalaya': 'meghalaya_district.json', 'Mizoram': 'mizoram_district.json',
-            'Nagaland': 'nagaland_district.json', 'Odisha': 'odisha_district.json',
-            'Puducherry': 'puducherry_district.json', 'Punjab': 'punjab_district.json',
-            'Rajasthan': 'rajasthan_district.json', 'Sikkim': 'sikkim_district.json',
-            'Tamil Nadu': 'tamilnadu_district.json', 'Telangana': 'telangana_district.json',
-            'Tripura': 'tripura_district.json', 'Uttar Pradesh': 'uttarakhand_district.json',
-            'Uttarakhand': 'uttarpradesh_district.json', 'West Bengal': 'westbengal_district.json'}
-state_codes = {'TT': 'Total', 'MH': 'Maharashtra', 'DL': 'Delhi', 'TN': 'Tamil Nadu', 'RJ': 'Rajasthan',
-               'MP': 'Madhya Pradesh', 'GJ': 'Gujarat', 'UP': 'Uttar Pradesh', 'TG': 'Telangana',
-               'AP': 'Andhra Pradesh', 'KL': 'Kerala', 'KA': 'Karnataka', 'JK': 'Jammu and Kashmir',
-               'WB': 'West Bengal', 'HR': 'Haryana', 'PB': 'Punjab', 'BR': 'Bihar', 'OR': 'Odisha', 'UT': 'Uttarakhand',
-               'CT': 'Chhattisgarh', 'HP': 'Himachal Pradesh', 'AS': 'Assam', 'JH': 'Jharkhand', 'CH': 'Chandigarh',
-               'LA': 'Ladakh', 'AN': 'Andaman and Nicobar Islands', 'ML': 'Meghalaya', 'GA': 'Goa', 'PY': 'Puducherry',
-               'MN': 'Manipur', 'TR': 'Tripura', 'MZ': 'Mizoram', 'AR': 'Arunachal Pradesh', 'NL': 'Nagaland',
-               'DN': 'Dadra and Nagar Haveli', 'DD': 'Daman and Diu', 'LD': 'Lakshadweep', 'SK': 'Sikkim'}
+def create_count_indicator(state, status):
+    today = df_states['DATE'][df_states.index[-1]]
+    yesterday = df_states['DATE'][df_states.index[-2]]
+    count_today = int(df_states[(df_states['DATE'] == today)
+                                & (df_states['STATE'] == state)
+                                & (df_states['STATUS'] == status)]['COUNT']
+                      )
+    count_yesterday = int(df_states[(df_states['DATE'] == yesterday)
+                                    & (df_states['STATE'] == state)
+                                    & (df_states['STATUS'] == status)]['COUNT']
+                          )
 
-total_list = ['Total Active', 'Total Confirmed', 'Total Deceased', 'Total Recovered']
-daily_list = ['Daily Confirmed', 'Daily Deceased', 'Daily Recovered']
-color_continuous_scale_dict = {'Total Active': 'Blues', 'Total Confirmed': 'Purples',
-                               'Total Deceased': 'Reds', 'Total Recovered': 'Greens', }
-color_discrete_map_total = {'Total Active': '#2170B5', 'Total Confirmed': '#6A51A3',
-                            'Total Deceased': '#CB181D', 'Total Recovered': '#238B46'}
-color_discrete_map_daily = {'Daily Active': '#2170B5', 'Daily Confirmed': '#6A51A3',
-                            'Daily Deceased': '#CB181D', 'Daily Recovered': '#238B46'}
+    fig_count_indicator = go.Figure(go.Indicator(
+        mode="number+delta",
+        value=count_today,
+        number={"valueformat": ",", 'font': {'size': 20}},
+        delta={'reference': count_yesterday, "valueformat": ",", "position": "right"},
+        # domain={'x': [0, 1], 'y': [0, 1]}
+    ))
+    fig_count_indicator.update_layout(autosize=False, width=150, height=50, margin=dict(l=0, r=0, b=0, t=0, pad=0),
+                                      paper_bgcolor="#F9F9F9")
 
-with open('data/json/states_daily.json') as states_daily:
-    states_daily_json = json.load(states_daily)
-df_states = pd.DataFrame(states_daily_json['states_daily']).replace('', '0')
-df_states.columns = map(str.upper, df_states.columns)
-df_states = df_states.rename(columns=state_codes).melt(id_vars=['DATE', 'STATUS']).rename(
-    columns={'variable': 'STATE', 'value': 'COUNT'})
-df_states = df_states.astype({'DATE': 'str', 'STATUS': 'str', 'STATE': 'str', 'COUNT': 'int32'})
-df_states = df_states.pivot_table(index=['DATE', 'STATE'], columns='STATUS', values='COUNT').reset_index()
-df_states['DATE'] = pd.to_datetime(df_states['DATE'])
-df_states = df_states.sort_values(by=['STATE', 'DATE'])
-df_states.columns.name = None
-df_states['Total Confirmed'] = df_states.groupby('STATE')['Confirmed'].transform(pd.Series.cumsum)
-df_states['Total Deceased'] = df_states.groupby('STATE')['Deceased'].transform(pd.Series.cumsum)
-df_states['Total Recovered'] = df_states.groupby('STATE')['Recovered'].transform(pd.Series.cumsum)
-df_states['Total Active'] = df_states['Total Confirmed'] - df_states['Total Deceased'] - df_states['Total Recovered']
-df_states = df_states.rename(
-    columns={'Confirmed': 'Daily Confirmed', 'Deceased': 'Daily Deceased', 'Recovered': 'Daily Recovered'})
-df_states = df_states.melt(id_vars=['DATE', 'STATE']).rename(columns={'variable': 'STATUS', 'value': 'COUNT'})
-df_states['DATE'] = df_states['DATE'].astype(str)
+    return fig_count_indicator
 
-with open('data/json/state_district_wise_v2.json') as state_district_wise_v2:
-    state_district_wise_v2_json = json.load(state_district_wise_v2)
-df_state_district = json_normalize(data=state_district_wise_v2_json,
-                                   record_path='districtData',
-                                   meta=['state', 'statecode'])
-df_state_district = df_state_district.rename(
-    columns={'district': 'District', 'notes': 'Notes', 'active': 'Active', 'confirmed': 'Confirmed',
-             'deceased': 'Deceased', 'recovered': 'Recovered', 'delta.confirmed': 'Delta Confirmed',
-             'delta.deceased': 'Delta Deceased', 'delta.recovered': 'Delta Recovered', 'state': 'State',
-             'statecode': 'State Code'})
+
+def create_test_count_indicator(state, status):
+    if state == 'Total':
+        df_state_test_fig = df_state_test.groupby('Updated On').sum().reset_index()
+    else:
+        df_state_test_fig = df_state_test[df_state_test['State'] == state].fillna(method='ffill').fillna(
+            0).reset_index()
+
+    today = df_state_test_fig['Updated On'][df_state_test_fig.index[-1]]
+    yesterday = df_state_test_fig['Updated On'][df_state_test_fig.index[-2]]
+    count_today = int(df_state_test_fig[df_state_test_fig['Updated On'] == today][status])
+    count_yesterday = int(df_state_test_fig[df_state_test_fig['Updated On'] == yesterday][status])
+
+    fig_test_count_indicator = go.Figure(go.Indicator(
+        mode="number+delta",
+        value=count_today,
+        number={"valueformat": ",", 'font': {'size': 16}},
+        delta={'reference': count_yesterday, "valueformat": ",", "position": "right"},
+        # domain={'x': [0, 1], 'y': [0, 1]}
+    ))
+    fig_test_count_indicator.update_layout(autosize=False, width=170, height=50, margin=dict(l=0, r=0, b=0, t=0, pad=0),
+                                      paper_bgcolor="#F9F9F9")
+
+    return fig_test_count_indicator
 
 
 def load_map_json(map_name):
@@ -243,7 +220,8 @@ layout = html.Div(
                 html.Div(
                     [
                         html.A(
-                            html.Button("Home", id="home-button", style={"background-color":"#119dff", "color":"#ffffff"}),
+                            html.Button("Home", id="home-button",
+                                        style={"background-color": "#119dff", "color": "#ffffff"}),
                             href="home",
                         ),
                         html.A(
@@ -288,6 +266,46 @@ layout = html.Div(
         ),
         html.Div(
             [
+                html.Div([html.H6('India', id='country', style={"margin-top": "0px", "margin-bottom": "0px"})],
+                         className="pretty_container two columns",
+                         ),
+                html.Div([html.H6('Active', style={"padding": 0,"margin-top": "0px", "margin-bottom": "0px"}),
+                          dcc.Graph(id='active-indicator-country',
+                                    figure=create_count_indicator(state='Total', status='Total Active'))],
+                         className="pretty_container two columns",
+                         style={"padding": 5,
+                                "border": "solid",
+                                "border-color": color_discrete_map_total['Total Active']}
+                         ),
+                html.Div([html.H6('Confirmed', style={"padding": 0,"margin-top": "0px", "margin-bottom": "0px"}),
+                          dcc.Graph(id='confirmed-indicator-country',
+                                    figure=create_count_indicator(state='Total', status='Total Confirmed'))],
+                         className="pretty_container two columns",
+                         style={"padding": 5, "border": "solid", "border-color": color_discrete_map_total['Total Confirmed']}
+                         ),
+                html.Div([html.H6('Deceased', style={"padding": 0,"margin-top": "0px", "margin-bottom": "0px"}),
+                          dcc.Graph(id='deceased-indicator-country',
+                                    figure=create_count_indicator(state='Total', status='Total Deceased'))],
+                         className="pretty_container two columns",
+                         style={"padding": 5, "border": "solid", "border-color": color_discrete_map_total['Total Deceased']}
+                         ),
+                html.Div([html.H6('Recovered', style={"padding": 0,"margin-top": "0px", "margin-bottom": "0px"}),
+                          dcc.Graph(id='recovered-indicator-country',
+                                    figure=create_count_indicator(state='Total', status='Total Recovered'))],
+                         className="pretty_container two columns",
+                         style={"padding": 5, "border": "solid", "border-color": color_discrete_map_total['Total Recovered']}
+                         ),
+                html.Div([html.H6('Tests', style={"padding": 0,"margin-top": "0px", "margin-bottom": "0px"}),
+                          dcc.Graph(id='tests-indicator-country',
+                                    figure=create_test_count_indicator(state='Total', status='Total Tested'))],
+                         className="pretty_container two columns",
+                         style={"padding": 5, "border": "solid", "border-color": color_discrete_map_total['Total Tested']}
+                         ),
+            ],
+            className="row flex-display",
+        ),
+        html.Div(
+            [
                 html.Div([html.Div(
                     [dcc.RadioItems(id='status-map-country', options=[{'label': i, 'value': 'Total ' + i} for i in
                                                                       ['Active', 'Confirmed', 'Deceased',
@@ -311,6 +329,44 @@ layout = html.Div(
                      ],
                     className="pretty_container five columns",
                 ),
+            ],
+            className="row flex-display",
+        ),
+        html.Div(
+            [
+                html.Div([html.H6('Maharashtra', id='state', style={"margin-top": "0px", "margin-bottom": "0px"})],
+                         className="pretty_container two columns",
+                         ),
+                html.Div([html.H6('Active', style={"padding": 0,"margin-top": "0px", "margin-bottom": "0px"}),
+                          dcc.Graph(id='active-indicator-state',
+                                    figure=create_count_indicator(state='Maharashtra', status='Total Active'))],
+                         className="pretty_container two columns",
+                         style={"padding": 5, "border": "solid", "border-color": color_discrete_map_total['Total Active']}
+                         ),
+                html.Div([html.H6('Confirmed', style={"padding": 0,"margin-top": "0px", "margin-bottom": "0px"}),
+                          dcc.Graph(id='confirmed-indicator-state',
+                                    figure=create_count_indicator(state='Maharashtra', status='Total Confirmed'))],
+                         className="pretty_container two columns",
+                         style={"padding": 5, "border": "solid", "border-color": color_discrete_map_total['Total Confirmed']}
+                         ),
+                html.Div([html.H6('Deceased', style={"padding": 0,"margin-top": "0px", "margin-bottom": "0px"}),
+                          dcc.Graph(id='deceased-indicator-state',
+                                    figure=create_count_indicator(state='Maharashtra', status='Total Deceased'))],
+                         className="pretty_container two columns",
+                         style={"padding": 5, "border": "solid", "border-color": color_discrete_map_total['Total Deceased']}
+                         ),
+                html.Div([html.H6('Recovered', style={"padding": 0,"margin-top": "0px", "margin-bottom": "0px"}),
+                          dcc.Graph(id='recovered-indicator-state',
+                                    figure=create_count_indicator(state='Maharashtra', status='Total Recovered'))],
+                         className="pretty_container two columns",
+                         style={"padding": 5, "border": "solid", "border-color": color_discrete_map_total['Total Recovered']}
+                         ),
+                html.Div([html.H6('Tests', style={"padding": 0,"margin-top": "0px", "margin-bottom": "0px"}),
+                          dcc.Graph(id='tests-indicator-state',
+                                    figure=create_test_count_indicator(state='Maharashtra', status='Total Tested'))],
+                         className="pretty_container two columns",
+                         style={"padding": 0, "border": "solid", "border-color": color_discrete_map_total['Total Tested']}
+                         ),
             ],
             className="row flex-display",
         ),
