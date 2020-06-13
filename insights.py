@@ -256,7 +256,8 @@ layout = html.Div(
                     [
                         html.A(
                             html.Button("Learn More", id="learn-more-button"),
-                            href="#",
+                            href="https://github.com/sushil-gurav/covid-19-india",
+                            target="_blank"
                         )
                     ],
                     className="one-third column",

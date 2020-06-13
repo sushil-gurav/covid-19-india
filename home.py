@@ -49,7 +49,7 @@ def create_test_count_indicator(state, status):
         delta={'reference': count_yesterday, "valueformat": ",", "position": "right"},
         # domain={'x': [0, 1], 'y': [0, 1]}
     ))
-    fig_test_count_indicator.update_layout(autosize=False, width=170, height=50, margin=dict(l=0, r=0, b=0, t=0, pad=0),
+    fig_test_count_indicator.update_layout(autosize=False, width=150, height=50, margin=dict(l=0, r=0, b=0, t=0, pad=0),
                                       paper_bgcolor="#F9F9F9")
 
     return fig_test_count_indicator
@@ -253,7 +253,8 @@ layout = html.Div(
                     [
                         html.A(
                             html.Button("Learn More", id="learn-more-button"),
-                            href="#",
+                            href="https://github.com/sushil-gurav/covid-19-india",
+                            target="_blank"
                         )
                     ],
                     className="one-third column",
@@ -365,7 +366,7 @@ layout = html.Div(
                           dcc.Graph(id='tests-indicator-state',
                                     figure=create_test_count_indicator(state='Maharashtra', status='Total Tested'))],
                          className="pretty_container two columns",
-                         style={"padding": 0, "border": "solid", "border-color": color_discrete_map_total['Total Tested']}
+                         style={"padding": 5, "border": "solid", "border-color": color_discrete_map_total['Total Tested']}
                          ),
             ],
             className="row flex-display",
